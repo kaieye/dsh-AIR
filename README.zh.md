@@ -22,17 +22,27 @@
 
 ## 安装
 
+从 npm 安装已发布的插件包：
+
 ```bash
-pnpm install
-pnpm build
-dsh plugin --profile web add link:/Users/chos1nz/Documents/project/dsh-AIR
+dsh plugin --profile web add dsh-air
 ```
 
 安装后重新启动 DSH。卸载命令：
 
 ```bash
-dsh plugin --profile web remove air
+dsh plugin --profile web remove dsh-air
 ```
+
+## 更新
+
+使用以下命令更新到 npm 上的最新版本：
+
+```bash
+dsh plugin --profile web update dsh-air --latest
+```
+
+更新后重新启动 DSH。
 
 ## 开发与验证
 

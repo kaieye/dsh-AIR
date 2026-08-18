@@ -22,17 +22,27 @@ Only history already loaded for the current conversation is available. Messages 
 
 ## Install
 
+Install the published package from npm:
+
 ```bash
-pnpm install
-pnpm build
-dsh plugin --profile web add link:/absolute/path/to/dsh-AIR
+dsh plugin --profile web add dsh-air
 ```
 
 Restart DSH after installation. To remove the plugin:
 
 ```bash
-dsh plugin --profile web remove air
+dsh plugin --profile web remove dsh-air
 ```
+
+## Update
+
+Update to the latest npm release with:
+
+```bash
+dsh plugin --profile web update dsh-air --latest
+```
+
+Restart DSH after updating.
 
 ## Development
 
