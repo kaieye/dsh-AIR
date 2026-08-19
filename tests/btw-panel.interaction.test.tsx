@@ -41,6 +41,7 @@ describe('BtwPanel interactions', () => {
       mountedRoot = null
     }
     document.body.innerHTML = ''
+    window.localStorage.clear()
   })
 
   async function mount(
@@ -97,6 +98,31 @@ describe('BtwPanel interactions', () => {
     expect(document.body.hasAttribute('data-dsh-air-btw-open')).toBe(false)
     expect(document.body.style.getPropertyValue('--dsh-air-btw-width')).toBe('')
     expect(document.getElementById('dsh-air-btw-panel-layout')).toBeNull()
+  })
+
+  it('supports keyboard resizing through the accessible separator', async () => {
+    const { controller, parent } = harness()
+    await controller.start('parent' as SessionId)
+    const { container } = await mount('parent' as SessionId, parent.getSnapshot(), controller)
+    const resize = container.querySelector<HTMLElement>('[data-dsh-air-btw-resize]')
+
+    expect(resize).not.toBeNull()
+    expect(resize?.getAttribute('role')).toBe('separator')
+    expect(resize?.getAttribute('aria-orientation')).toBe('vertical')
+    expect(resize?.getAttribute('aria-valuenow')).toBe('440')
+    expect(resize?.tabIndex).toBe(0)
+
+    await act(async () => {
+      if (resize !== null) dispatchKey(resize, { key: 'ArrowLeft' })
+    })
+    expect(document.body.style.getPropertyValue('--dsh-air-btw-width')).toBe('464px')
+    expect(window.localStorage.getItem('dsh-air:btw-panel-width')).toBe('464')
+
+    await act(async () => {
+      if (resize !== null) dispatchKey(resize, { key: 'Home' })
+    })
+    expect(document.body.style.getPropertyValue('--dsh-air-btw-width')).toBe('320px')
+    expect(window.localStorage.getItem('dsh-air:btw-panel-width')).toBe('320')
   })
 
   it('closes BTW only from the explicit top-right close button', async () => {

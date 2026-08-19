@@ -52,6 +52,11 @@ body[data-dsh-air-btw-resizing] [data-dsh-air-btw-resize] {
   background: var(--dsw-alias-interactive-bg-hover-accent);
 }
 
+[data-dsh-air-btw-resize]:focus-visible {
+  outline: 2px solid var(--dsw-alias-label-primary);
+  outline-offset: -2px;
+}
+
 @media (max-width: 760px) {
   body[data-dsh-air-btw-open] #root {
     margin-right: var(--dsh-sidebar-width, 0px);
@@ -313,11 +318,19 @@ export function BtwPanel({ sessionId, useSession, btw, nativeConversation }: Btw
     document.body.style.setProperty('--dsh-air-btw-width', `${panelWidth}px`)
   }, [active, panelWidth])
 
+  function setKeyboardPanelWidth(requestedWidth: number): void {
+    const nextWidth = clampPanelWidth(requestedWidth)
+    panelWidthRef.current = nextWidth
+    setPanelWidth(nextWidth)
+    persistPanelWidth(nextWidth)
+  }
+
   if (!active) return null
   const closing = snapshot.phase === 'closing'
   const parentStatus = snapshot.parentStatus === 'closed' ? parentIndicator.status : snapshot.parentStatus
   const childLabel = childStatusLabel(snapshot.phase, snapshot.child)
   const childStatus = snapshot.child === null ? snapshot.phase : deriveBtwSessionStatus(snapshot.child)
+  const panelWidthMaximum = clampPanelWidth(BTW_PANEL_MAX_WIDTH)
   const pendingLabel = parentIndicator.pending.total === 0
     ? null
     : `主会话待处理 ${parentIndicator.pending.total} 项`
@@ -354,7 +367,14 @@ export function BtwPanel({ sessionId, useSession, btw, nativeConversation }: Btw
       <div
         data-dsh-air-btw-resize=""
         style={styles.resize}
-        aria-hidden="true"
+        role="separator"
+        tabIndex={0}
+        aria-label="调整 BTW 宽度"
+        aria-orientation="vertical"
+        aria-valuemin={BTW_PANEL_MIN_WIDTH}
+        aria-valuemax={panelWidthMaximum}
+        aria-valuenow={panelWidth}
+        aria-valuetext={`${panelWidth} 像素`}
         onPointerDown={(event) => {
           event.preventDefault()
           resizeRef.current = { startX: event.clientX, startWidth: panelWidthRef.current }
@@ -384,6 +404,30 @@ export function BtwPanel({ sessionId, useSession, btw, nativeConversation }: Btw
           resizeRef.current = null
           document.body.removeAttribute('data-dsh-air-btw-resizing')
           persistPanelWidth(panelWidthRef.current)
+        }}
+        onKeyDown={(event) => {
+          const step = event.shiftKey ? 80 : 24
+          let requestedWidth: number | null = null
+          switch (event.key) {
+            // The handle sits on the panel's left edge: left makes the panel
+            // wider, right makes it narrower.
+            case 'ArrowLeft':
+              requestedWidth = panelWidthRef.current + step
+              break
+            case 'ArrowRight':
+              requestedWidth = panelWidthRef.current - step
+              break
+            case 'Home':
+              requestedWidth = BTW_PANEL_MIN_WIDTH
+              break
+            case 'End':
+              requestedWidth = BTW_PANEL_MAX_WIDTH
+              break
+            default:
+              return
+          }
+          event.preventDefault()
+          setKeyboardPanelWidth(requestedWidth)
         }}
       />
 
