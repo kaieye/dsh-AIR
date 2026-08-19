@@ -1,7 +1,7 @@
 {
   "name": "dsh-air",
-  "description": "Lightweight arrow-key history recall for DSH.",
-  "version": "0.1.0",
+  "description": "Lightweight DSH plugin for history recall and BTW side conversations.",
+  "version": "0.1.2",
   "type": "module",
   "main": "lib/index.js",
   "types": "lib/types/index.d.ts",
@@ -25,7 +25,8 @@
       "inject": [
         "@deepseek-ai/dsh-client-runtime",
         "@deepseek-ai/dsh-client-ui-conversation",
-        "@deepseek-ai/dsh-client-ui-slots"
+        "@deepseek-ai/dsh-client-ui-slots",
+        "@deepseek-ai/dsh-client-ui-input-trigger"
       ],
       "platform": "web"
     }
@@ -44,11 +45,16 @@
   },
   "devDependencies": {
     "@deepseek-ai/cordis": "^4.0.1",
-    "@deepseek-ai/dsh-client-runtime": "^0.1.0-rc.6",
-    "@deepseek-ai/dsh-client-ui-conversation": "^0.1.0-rc.6",
-    "@deepseek-ai/dsh-client-ui-slots": "^0.1.0-rc.6",
+    "@deepseek-ai/dsh-client-runtime": "^0.1.0-rc.7",
+    "@deepseek-ai/dsh-client-ui-conversation": "^0.1.0-rc.7",
+    "@deepseek-ai/dsh-client-ui-input-trigger": "^0.1.0-rc.7",
+    "@deepseek-ai/dsh-client-ui-settings": "^0.1.0-rc.7",
+    "@deepseek-ai/dsh-client-ui-slots": "^0.1.0-rc.7",
+    "@deepseek-ai/dsh-client-web-react": "0.1.0-rc.7",
     "@types/react": "~18.3.1",
+    "jsdom": "^28.0.0",
     "react": "^18.3.1",
+    "react-dom": "^18.3.1",
     "tsdown": "0.22.2",
     "typescript": "~5.7.2",
     "vitest": "^4.1.8"
@@ -65,7 +71,10 @@
     "deepseek",
     "plugin",
     "history",
-    "keyboard"
+    "keyboard",
+    "search",
+    "btw",
+    "side-conversation"
   ],
   "license": "MIT",
   "repository": {

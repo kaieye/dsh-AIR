@@ -83,3 +83,116 @@ describe('normalizeHistoryEntries', () => {
     ])
   })
 })
+
+describe('reverse history search', () => {
+  it('opening a search never previews an entry until a query is typed', () => {
+    const history = new HistoryNavigator(['remembered', 'other'])
+    history.beginSearch()
+    expect(history.isSearching()).toBe(true)
+    expect(history.searchQueryTextOf()).toBe('')
+    expect(history.updateSearchQuery('')).toEqual({ type: 'notFound' })
+  })
+
+  it('matches case-insensitively and previews the newest match first', () => {
+    const history = new HistoryNavigator(['Build Rel', 'other', 'build rel'])
+    history.beginSearch()
+    expect(history.updateSearchQuery('rel')).toEqual({ type: 'found', text: 'build rel' })
+  })
+
+  it('steps older to older unique matches and stops at the boundary', () => {
+    const history = new HistoryNavigator([
+      'git status',
+      'cargo test -p dsh-air',
+      'git diff',
+    ])
+    history.beginSearch()
+    expect(history.updateSearchQuery('git')).toEqual({ type: 'found', text: 'git diff' })
+    expect(history.stepSearch('older')).toEqual({ type: 'found', text: 'git status' })
+    expect(history.stepSearch('older')).toEqual({ type: 'boundary' })
+    expect(history.stepSearch('older')).toEqual({ type: 'boundary' })
+  })
+
+  it('steps newer back to the newest match and stays there at the boundary', () => {
+    const history = new HistoryNavigator(['git status', 'git diff'])
+    history.beginSearch()
+    expect(history.updateSearchQuery('git')).toEqual({ type: 'found', text: 'git diff' })
+    history.stepSearch('older')
+    expect(history.stepSearch('newer')).toEqual({ type: 'found', text: 'git diff' })
+    expect(history.stepSearch('newer')).toEqual({ type: 'boundary' })
+  })
+
+  it('deduplicates matching entries within a search without mutating history', () => {
+    const history = new HistoryNavigator(['git status', 'cargo test', 'git status', 'git diff'])
+    history.beginSearch()
+    expect(history.updateSearchQuery('git')).toEqual({ type: 'found', text: 'git diff' })
+    expect(history.stepSearch('older')).toEqual({ type: 'found', text: 'git status' })
+    expect(history.stepSearch('older')).toEqual({ type: 'boundary' })
+    expect(history.stepSearch('newer')).toEqual({ type: 'found', text: 'git diff' })
+    expect(history.history).toEqual(['git status', 'cargo test', 'git status', 'git diff'])
+  })
+
+  it('returns notFound when no entry matches, and recovers on a broadened query', () => {
+    const history = new HistoryNavigator(['git status'])
+    history.beginSearch()
+    expect(history.updateSearchQuery('zzz')).toEqual({ type: 'notFound' })
+    expect(history.updateSearchQuery('git')).toEqual({ type: 'found', text: 'git status' })
+  })
+
+  it('repointing at a match lets a later Up keep walking from it', () => {
+    const history = new HistoryNavigator(['oldest', 'middle', 'newest'])
+    history.beginSearch()
+    expect(history.updateSearchQuery('newest')).toEqual({ type: 'found', text: 'newest' })
+    expect(history.navigate('up', { draft: 'newest', selectionStart: 6, selectionEnd: 6 })).toEqual({
+      handled: true,
+      text: 'middle',
+    })
+  })
+
+  it('finishing a search leaves the navigator ready for fresh search', () => {
+    const history = new HistoryNavigator(['git status'])
+    history.beginSearch()
+    history.updateSearchQuery('git')
+    history.finishSearch()
+    expect(history.isSearching()).toBe(false)
+    history.beginSearch()
+    expect(history.updateSearchQuery('git')).toEqual({ type: 'found', text: 'git status' })
+  })
+
+  it('reports match position and count for the footer status bar', () => {
+    const history = new HistoryNavigator([
+      'git status',
+      'cargo test -p dsh-air',
+      'git diff',
+    ])
+    expect(history.searchMatchPosition()).toBeNull()
+    expect(history.searchMatchCount()).toBeNull()
+
+    history.beginSearch()
+    // Idle: no query has been rebuilt yet.
+    expect(history.searchMatchPosition()).toBeNull()
+    expect(history.searchMatchCount()).toBe(0)
+
+    expect(history.updateSearchQuery('git')).toEqual({ type: 'found', text: 'git diff' })
+    expect(history.searchMatchCount()).toBe(2)
+    expect(history.searchMatchPosition()).toBe(1)
+
+    history.stepSearch('older')
+    expect(history.searchMatchPosition()).toBe(2)
+
+    history.stepSearch('older')
+    // At the boundary the current match (position 2) is preserved.
+    expect(history.searchMatchPosition()).toBe(2)
+    expect(history.searchMatchCount()).toBe(2)
+
+    history.stepSearch('newer')
+    expect(history.searchMatchPosition()).toBe(1)
+  })
+
+  it('a query with no matches yields no position but still counts zero', () => {
+    const history = new HistoryNavigator(['git status'])
+    history.beginSearch()
+    expect(history.updateSearchQuery('zzz')).toEqual({ type: 'notFound' })
+    expect(history.searchMatchPosition()).toBeNull()
+    expect(history.searchMatchCount()).toBe(0)
+  })
+})
