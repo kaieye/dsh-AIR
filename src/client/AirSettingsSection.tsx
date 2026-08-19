@@ -7,6 +7,7 @@ import {
   HISTORY_STORAGE_LIMIT_MIN,
   clearGlobalHistory,
   readGlobalHistory,
+  resolveHistoryLimit,
 } from '../core/history-persistence.ts'
 import { clearAllDraftHistories } from '../core/draft-persistence.ts'
 import { PASTE_STORAGE_PREFIX } from '../core/paste-chip.ts'
@@ -166,7 +167,11 @@ function readHistoryLimit(): number | null {
     const raw = window.localStorage.getItem(HISTORY_LIMIT_STORAGE_KEY)
     if (raw === null) return null
     const parsed = Number(raw)
-    return Number.isInteger(parsed) ? parsed : null
+    // Keep the displayed value aligned with the value the persistence layer
+    // will actually use. Invalid values intentionally show the default rather
+    // than exposing a stale `0`, negative number, or malformed string.
+    if (!Number.isInteger(parsed) || parsed <= 0) return null
+    return resolveHistoryLimit(window.localStorage)
   } catch {
     return null
   }

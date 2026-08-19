@@ -64,6 +64,14 @@ describe('AirSettingsSection rendering', () => {
     const html = renderToStaticMarkup(<AirSettingsSection />)
     expect(html).toContain(`value="${HISTORY_STORAGE_LIMIT}"`)
   })
+
+  it('shows the effective cap instead of an invalid or out-of-range stored value', () => {
+    window.localStorage.setItem(HISTORY_LIMIT_STORAGE_KEY, '0')
+    expect(renderToStaticMarkup(<AirSettingsSection />)).toContain(`value="${HISTORY_STORAGE_LIMIT}"`)
+
+    window.localStorage.setItem(HISTORY_LIMIT_STORAGE_KEY, '99999')
+    expect(renderToStaticMarkup(<AirSettingsSection />)).toContain('value="5000"')
+  })
 })
 
 describe('AirSettingsSection interactions', () => {
