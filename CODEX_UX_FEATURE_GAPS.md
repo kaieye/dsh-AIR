@@ -43,8 +43,9 @@
 - **`ArrowUp` / `ArrowDown` 历史召回**：`src/client/HistoryKeyHandler.tsx`、`src/core/history-navigation.ts`。
 - **`Ctrl+R` 逆向历史搜索**：`HistoryKeyHandler.tsx`、`HistorySearchFooter.tsx`。
 - **`/btw` / `/side` 旁路会话**：`BtwController.ts`、`BtwPanel.tsx`、`btw-boundary.ts`。
+- **富草稿历史恢复**：版本化 `DraftSnapshot` 可恢复图片、引用与大段粘贴内容。
 
-其中，当前历史召回仍明确跳过图片或其他不能完整还原为文本草稿的消息，见 `README.zh.md:47`。这为下文“富草稿历史恢复”留下了清晰的第二阶段空间。
+下文“富草稿历史恢复”条目保留为该能力落地前的调研背景。
 
 ## 4. 候选总览
 
@@ -197,7 +198,7 @@ Harness 有按钮 tooltip 和各组件自己的键盘事件，但检索 `keyboar
 
 **Harness / dsh-air 缺口**
 
-固定 Harness 提交中未发现 composer 发送历史召回。`dsh-air` 已补上纯文本历史，但 `README.zh.md:47` 明确说明图片或其他非文本内容无法完整恢复，因此会被跳过。
+固定 Harness 提交中未发现 composer 发送历史召回。`dsh-air` 当前已通过版本化 `DraftSnapshot` 补齐文本、图片、引用与大段粘贴内容的历史恢复。
 
 **UX 价值**
 

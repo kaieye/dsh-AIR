@@ -53,7 +53,7 @@
 - `src/client/HistoryKeyHandler.tsx`：读取/写入全局历史；导航 entries = 全局记录 + 当前窗口新增后缀；`historyKey(..., occurrence)` 区分同文案多 offset。
 - `src/core/draft-snapshot.ts`：`historyKey` 支持 occurrence 消歧。
 - `tests/history-persistence.test.ts`：覆盖全局记录/迁移/裁剪与重复文本语义。
-- `README.md` / `README.zh.md`：跨会话全局持久化说明。
+- `README.md` / `README.en.md`：中英文项目说明。
 - `docs/history-global.md`：本文档。
 - `docs/history-navigation-alignment.md`：↑/↓ 与 Ctrl+R 的行为对齐清单。
 
